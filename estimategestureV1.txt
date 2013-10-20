@@ -1,0 +1,76 @@
+//estimate the hand skeleton pose
+	eHandGesture estimatePose(int nowIndex)
+	{
+		eHandGesture gesture=eHandGesture.none;
+		float verticalMovementL=0f;
+		float absverticalMovementL=0f;
+		float verticalMovementR=0f;
+		float absverticalMovementR=0f;
+		float horizontalMovementL=0f;
+		float abshorizontalMovementL=0f;
+		float horizontalMovementR=0f; 
+		float abshorizontalMovementR=0f; 
+		for (int i=0;i<30;i++)
+		{
+			if (handLeftPrevious[i].x==0) return gesture;
+		}
+		
+		//calculate the movement
+		for (int i=0;i<30;i++)
+		{
+		    if (nowIndex!=i)
+			{ 
+				
+			    verticalMovementL=handLeftPrevious[i].y-handLeftPrevious[nowIndex].y;
+		        verticalMovementR=handRightPrevious[i].y-handRightPrevious[nowIndex].y;
+				//Debug.Log (verticalMovementL);
+				horizontalMovementL=handLeftPrevious[i].x-handLeftPrevious[nowIndex].x;
+		        horizontalMovementR=handRightPrevious[i].x-handRightPrevious[nowIndex].x;
+				
+				absverticalMovementL=Mathf.Abs(verticalMovementL);
+				absverticalMovementR=Mathf.Abs (verticalMovementR);
+				abshorizontalMovementL=Mathf.Abs(horizontalMovementL);
+				abshorizontalMovementR=Mathf.Abs(horizontalMovementR);
+			}
+			
+			
+			
+			if (verticalMovementL>slideVertical||verticalMovementR>slideVertical)
+			{
+			    handLeftPrevious=new Vector3[30];
+				handRightPrevious=new Vector3[30];
+				FrameCount=0;
+				gesture=eHandGesture.slideUp;
+							
+			return gesture;
+			}
+			else if (verticalMovementR<-slideVertical||verticalMovementL<-slideVertical)
+			{
+				handLeftPrevious=new Vector3[30];
+				handRightPrevious=new Vector3[30];
+				FrameCount=0;
+				gesture=eHandGesture.slideDown;
+							
+			return gesture;
+			}
+			else if (horizontalMovementR < -slideHorizontal)
+			{
+				 handLeftPrevious=new Vector3[30];
+				handRightPrevious=new Vector3[30];
+				FrameCount=0;
+				gesture=eHandGesture.slideLeft;
+							
+			return gesture;
+			}
+			else if (horizontalMovementL > slideHorizontal)
+			{
+				handLeftPrevious=new Vector3[30];
+				handRightPrevious=new Vector3[30];
+				FrameCount=0;
+				gesture=eHandGesture.slideRight;
+							
+			return gesture;
+			}
+		}
+		return gesture;
+	}
