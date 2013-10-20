@@ -1,76 +1,51 @@
 //estimate the hand skeleton pose
 	eHandGesture estimatePose(int nowIndex)
 	{
-		eHandGesture gesture=eHandGesture.none;
-		float verticalMovementL=0f;
-		float absverticalMovementL=0f;
-		float verticalMovementR=0f;
-		float absverticalMovementR=0f;
-		float horizontalMovementL=0f;
-		float abshorizontalMovementL=0f;
-		float horizontalMovementR=0f; 
-		float abshorizontalMovementR=0f; 
+		float[] movement=new float[4]; 
+		int maxMovement=0;
+		
 		for (int i=0;i<30;i++)
 		{
-			if (handLeftPrevious[i].x==0) return gesture;
+			if (handLeftPrevious[i].x==0) return (eHandGesture)(movementMask);
 		}
 		
 		//calculate the movement
 		for (int i=0;i<30;i++)
 		{
+		    maxMovement=0;
 		    if (nowIndex!=i)
 			{ 
 				
-			    verticalMovementL=handLeftPrevious[i].y-handLeftPrevious[nowIndex].y;
-		        verticalMovementR=handRightPrevious[i].y-handRightPrevious[nowIndex].y;
+			    movement[0]=handLeftPrevious[i].y-handLeftPrevious[nowIndex].y;
+		        movement[1]=handRightPrevious[i].y-handRightPrevious[nowIndex].y;
 				//Debug.Log (verticalMovementL);
-				horizontalMovementL=handLeftPrevious[i].x-handLeftPrevious[nowIndex].x;
-		        horizontalMovementR=handRightPrevious[i].x-handRightPrevious[nowIndex].x;
-				
-				absverticalMovementL=Mathf.Abs(verticalMovementL);
-				absverticalMovementR=Mathf.Abs (verticalMovementR);
-				abshorizontalMovementL=Mathf.Abs(horizontalMovementL);
-				abshorizontalMovementR=Mathf.Abs(horizontalMovementR);
+				movement[2]=handLeftPrevious[i].x-handLeftPrevious[nowIndex].x;
+		        movement[3]=handRightPrevious[i].x-handRightPrevious[nowIndex].x;
+
+			}
+			double tmp=Mathf.Abs(movement[0]);
+			int count;
+			for (count=1;count<4;count++)
+			{
+				if (tmp<Mathf.Abs (movement[count]))
+				{
+					tmp=Mathf.Abs(movement[count]);
+					maxMovement=count;
+				}
 			}
 			
-			
-			
-			if (verticalMovementL>slideVertical||verticalMovementR>slideVertical)
+			//Debug.Log("moveMent:"+maxMovement);
+			if ((maxMovement<2&&Mathf.Abs(movement[maxMovement])>slideVertical)||(maxMovement>=2&&Mathf.Abs (movement[maxMovement])>slideHorizontal))
 			{
-			    handLeftPrevious=new Vector3[30];
-				handRightPrevious=new Vector3[30];
-				FrameCount=0;
-				gesture=eHandGesture.slideUp;
-							
-			return gesture;
-			}
-			else if (verticalMovementR<-slideVertical||verticalMovementL<-slideVertical)
-			{
-				handLeftPrevious=new Vector3[30];
-				handRightPrevious=new Vector3[30];
-				FrameCount=0;
-				gesture=eHandGesture.slideDown;
-							
-			return gesture;
-			}
-			else if (horizontalMovementR < -slideHorizontal)
-			{
-				 handLeftPrevious=new Vector3[30];
-				handRightPrevious=new Vector3[30];
-				FrameCount=0;
-				gesture=eHandGesture.slideLeft;
-							
-			return gesture;
-			}
-			else if (horizontalMovementL > slideHorizontal)
-			{
-				handLeftPrevious=new Vector3[30];
-				handRightPrevious=new Vector3[30];
-				FrameCount=0;
-				gesture=eHandGesture.slideRight;
-							
-			return gesture;
+				if (movement[maxMovement]>0)
+				{
+					return (eHandGesture)(movementMask>>(maxMovement+1));
+				}
+				else
+				{
+					return (eHandGesture)(movementMask<<(maxMovement+1));
+				}
 			}
 		}
-		return gesture;
+		return (eHandGesture)(movementMask);
 	}
